@@ -10,7 +10,7 @@ from tf import transformations
 pub = None
 sensors = {'RIGHT':0,'FRONT':0,'LEFT':0}
 
-
+yaw_=0
 weighted_front=0
 
 #pid values
@@ -27,6 +27,18 @@ integrat_state=0
 prev_error=0
 error=0
 
+def clbk_odom(msg):
+    global yaw_
+    # yaw
+    # convert quaternions to euler angles, only extracting yaw angle for the robot
+    quaternion = (
+        msg.pose.pose.orientation.x,
+        msg.pose.pose.orientation.y,
+        msg.pose.pose.orientation.z,
+        msg.pose.pose.orientation.w)
+    euler = transformations.euler_from_quaternion(quaternion)
+    
+    yaw_ = euler[2]
 
 def clbk_laser(msg):
     global sensors,weighted_front
@@ -39,8 +51,10 @@ def clbk_laser(msg):
 
 
 def motion():
-    global sensors
+    global sensors,yaw_
     sub = rospy.Subscriber('/my_mm_robot/laser/scan', LaserScan, clbk_laser)
+    sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom) 
+    is_straight=False
     msg = Twist()
     linear_x=0.2
     angular_z=0
@@ -55,6 +69,17 @@ def motion():
             angular_z=angle
         else :
             angular_z=-angle
+        is_straight=False
+    else :
+        is_straight=True
+
+    if is_straight:
+
+        if sensors['RIGHT']<0.0553:
+            angular_z=-0.3
+    
+        if sensors['LEFT']<0.0553:
+            angular_z=0.3
 
     print("angular_z: {}".format(angular_z))
 
