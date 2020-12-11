@@ -1,9 +1,11 @@
 import rospy
 import math
+import time
 
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from tf import transformations
+
 
 current_yaw_=0
 yaw_ = 0
@@ -29,7 +31,7 @@ def yaw_error(target_yaw):
         yaw_ = -target_yaw
     if(yaw_>math.pi):
         yaw_ = math.pi - yaw_
-    print(yaw_)
+    #print(yaw_)
     return (yaw_ - current_yaw_)
 
 
@@ -50,3 +52,22 @@ def rotate(degree):
     msg.angular.z=0
     pub.publish(msg)
     rospy.loginfo("turning successful")
+
+
+def motion_go_straight(linear_velocity):
+    pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+    msg = Twist()
+    msg.linear.x = linear_velocity
+    pub.publish(msg)
+
+def motion_go_left():
+    rotate(90)
+    motion_go_straight(0.15)
+    time.sleep(3)
+    motion_go_straight(0.0)
+
+def motion_go_right():
+    rotate(-90)
+    motion_go_straight(0.15)
+    time.sleep(3)
+    motion_go_straight(0.0)
