@@ -66,9 +66,9 @@ def motion():
         angle=angle/k
         angle=math.asin(angle)
         if sensors['RIGHT']<sensors['LEFT']:
-            angular_z=angle
-        else :
             angular_z=-angle
+        else :
+            angular_z=angle
         is_straight=False
     else :
         is_straight=True
@@ -76,10 +76,10 @@ def motion():
     if is_straight:
 
         if sensors['RIGHT']<0.0553:
-            angular_z=-0.3
+            angular_z=0.3
     
         if sensors['LEFT']<0.0553:
-            angular_z=0.3
+            angular_z=-0.3
 
     print("angular_z: {}".format(angular_z))
 
