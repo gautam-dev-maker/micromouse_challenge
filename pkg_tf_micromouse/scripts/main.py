@@ -13,23 +13,22 @@ pub=0
 
 def main():
     sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom) 
-    
+    sub = rospy.Subscriber('/my_mm_robot/laser/scan', LaserScan, clbk_laser)
     rospy.init_node('directions')
 
     rate = rospy.Rate(20)
 
+
+    while 1:
+        if(Is_Straight_Available()):
+            motion_go_straight(0.1)
+        elif(Is_Right_Available_Available()):
+            motion_go_right()
+            break
+        else:
+            motion_go_straight(0.0)
+
     
-	#motion_go_straight()
-    rotate(-90)
-    rotate(90)
-    rotate(90)
-    rotate(90)
-    rotate(90)
-    rotate(90)
-
-
-    rate.sleep()
-
 
 if __name__=='__main__':
     main()
