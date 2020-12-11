@@ -6,7 +6,6 @@ from nav_msgs.msg import Odometry
 from tf import transformations
 
 current_yaw_=0
-kp = 0.5
 yaw_ = 0
 pub = 0
 
@@ -26,7 +25,7 @@ def clbk_odom(msg):
 def yaw_error(target_yaw):
     global current_yaw_ ,yaw_
     yaw_ = target_yaw
-    if(-(math.pi)<target_yaw<-3.01):
+    if(-(math.pi)<target_yaw<-3.1 or target_yaw<-(math.pi)):
         yaw_ = -target_yaw
     if(yaw_>math.pi):
         yaw_ = math.pi - yaw_
@@ -43,9 +42,7 @@ def rotate(degree):
     target_yaw = current_yaw_+turn_angle
     rospy.loginfo("turning by angle")
     yaw_error(target_yaw)
-    #print('{0} {1}'.format(current_yaw_,yaw_error(target_yaw)))
     while yaw_error(target_yaw)>0.01 or yaw_error(target_yaw)<-0.01:
-        #print('{0} {1}'.format(current_yaw_,yaw_error(target_yaw)))
         msg.angular.z= angular_z
         msg.linear.x = 0
         pub.publish(msg)
