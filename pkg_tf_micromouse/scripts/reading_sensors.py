@@ -4,22 +4,39 @@ import rospy
 
 from sensor_msgs.msg import LaserScan
 
+from geometry_msgs.msg import Twist
+from nav_msgs.msg import Odometry
+from tf import transformations
+
+yaw_=0
+weighted_front=0
+
 def clbk_laser(msg):
-    # 360 / 5 = 72
-    regions = [
-        min(min(msg.ranges[0:72]), 10),
-        min(min(msg.ranges[72:144]), 10),
-        min(min(msg.ranges[144:216]), 10),
-        min(min(msg.ranges[216:288]), 10),
-        min(min(msg.ranges[288:360]), 10),
-    ]
-    print('%0.3f %0.3f %0.3f %0.3f %0.3f',regions[0],regions[1],regions[2],regions[3],regions[4])
-    print(max(msg.ranges[0:360]))
+    global weighted_front
+    # weighted_front=msg.ranges[125]-msg.ranges[143]
+    # print("Weighted Front : {}".format(weighted_front))
+    print("right: {}, front: {}, left: {}".format(msg.ranges[0],msg.ranges[179],msg.ranges[359]))
+
+def clbk_odom(msg):
+    global yaw_
+    # yaw
+    # convert quaternions to euler angles, only extracting yaw angle for the robot
+    quaternion = (
+        msg.pose.pose.orientation.x,
+        msg.pose.pose.orientation.y,
+        msg.pose.pose.orientation.z,
+        msg.pose.pose.orientation.w)
+    euler = transformations.euler_from_quaternion(quaternion)
+    
+    yaw_ = euler[2]
+    # print("yaw:- {}".format(yaw_))
 
 def main():
     rospy.init_node('reading_laser')
     
     sub = rospy.Subscriber('/my_mm_robot/laser/scan', LaserScan, clbk_laser)
+
+    sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom)
     
     rospy.spin()
 
