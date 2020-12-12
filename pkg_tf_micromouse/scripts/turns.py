@@ -37,6 +37,7 @@ def yaw_error(target_yaw):
 
 def rotate(degree):
     global yaw_,current_yaw_
+    sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom) 
     angular_z = 0.3 if degree>0 else -0.3
     pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
     msg = Twist()
@@ -60,11 +61,18 @@ def motion_go_straight(linear_velocity):
     msg.linear.x = linear_velocity
     pub.publish(msg)
 
-def motion_go_left():
-    rotate(90)
-    motion_go_straight(0.15)
-    time.sleep(3)
-    motion_go_straight(0.0)
+def motion_go_left(linear_velocity):
+    # rotate(90)
+    # motion_go_straight(0.15)
+    # time.sleep(3)
+    # motion_go_straight(0.0)
+    pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+    msg = Twist()
+    msg.linear.x = linear_velocity
+    msg.angular.z= 0.3
+    pub.publish(msg)
+    time.sleep(1.5)
+    
 
 def motion_go_right():
     rotate(-90)

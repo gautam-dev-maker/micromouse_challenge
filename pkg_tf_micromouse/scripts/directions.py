@@ -20,7 +20,7 @@ def clbk_laser(msg):
     sensor_r = min(min(msg.ranges[0:35]), 10)
     
 def Is_Right_Available():
-    sub = rospy.Subscriber('/my_mm_robot/laser/scan', LaserScan, clbk_laser)
+    # sub = rospy.Subscriber('/my_mm_robot/laser/scan', LaserScan, clbk_laser)
     if sensor_r>d:
         rospy.loginfo("Right is available")
         return True
@@ -42,5 +42,8 @@ def Is_Straight_Available():
         rospy.loginfo("Straight is availabe")
         return True
     return False
+
+# def avoid_left_wall(left_value):
+#     if(left_value)
     
 
