@@ -5,7 +5,7 @@ from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist
 from turns import *
 pub = None
-sensors = {'RIGHT':1.6,'FRONT':1.6,'LEFT':1.6}
+sensors = {'RIGHT':1.6,'FRONT':1.6,'LEFT':1.6,'F_LEFT':1.6,'R_LEFT':1.6}
 
 desired_yaw_ =0
 
@@ -27,7 +27,7 @@ def clbk_laser(msg):
       'RIGHT' : min(min(msg.ranges[0:20]), 10),
       'FRONT' : min(min(msg.ranges[170:190]), 10),
       'LEFT' : min(min(msg.ranges[329:359]), 10),
-      'F_LEFT':
+      'F_LEFT': 
       'F_RIGHT':
     }
 

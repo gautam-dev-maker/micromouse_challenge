@@ -62,7 +62,6 @@ def rotate(degree):
     pub.publish(msg)
     rospy.loginfo("turning successful")
 
-<<<<<<< HEAD
 def straight_for_time(t):
     pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
     msg = Twist()
@@ -153,7 +152,7 @@ def left_turn():
     msg.angular.z=0.96*w
     pub.publish(msg)
     t0 = rospy.Time.now().to_sec()
-    stop_time=(t0+duration)
+    stop_time=(t0+duration)*0.7
     t1=  rospy.Time.now().to_sec()
     while(t1<stop_time):
         msg.linear.x=4*v
@@ -166,7 +165,7 @@ def left_turn():
     pub.publish(msg)
     rate=rospy.Rate(5)
     rate.sleep()
-    straight_for_time(0.5)
+    straight_for_time(0.1)
 
 def right_turn():
     straight_until_noread_right()
@@ -193,7 +192,6 @@ def right_turn():
     pub.publish(msg)
     straight_for_time(0.5)
     
-=======
 
 def motion_go_straight(linear_velocity):
     pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
@@ -201,27 +199,12 @@ def motion_go_straight(linear_velocity):
     msg.linear.x = linear_velocity
     pub.publish(msg)
 
-<<<<<<< HEAD
-def motion_go_left(linear_velocity):
-    # rotate(90)
-    # motion_go_straight(0.15)
-    # time.sleep(3)
-    # motion_go_straight(0.0)
-    pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
-    msg = Twist()
-    msg.linear.x = linear_velocity
-    msg.angular.z= 0.3
-    pub.publish(msg)
-    time.sleep(1.5)
-    
-=======
 def motion_go_left():
     #time.sleep(2.5)
     rotate(90)
     motion_go_straight(0.15)
     #time.sleep(3)
     #motion_go_straight(0.0)
->>>>>>> f4dce7ed5fb58c336d6ed6b610975075eff4fc2e
 
 def motion_go_right():
     #time.sleep(2.5)
@@ -229,4 +212,4 @@ def motion_go_right():
     motion_go_straight(0.15)
     #time.sleep(3)
     #motion_go_straight(0.0)
->>>>>>> f4dce7ed5fb58c336d6ed6b610975075eff4fc2e
+
