@@ -30,26 +30,30 @@ def yaw_error(target_yaw):
     if(-(math.pi)<target_yaw<-3.1 or target_yaw<-(math.pi)):
         yaw_ = -target_yaw
     if(yaw_>math.pi):
-        yaw_ = math.pi - yaw_
-    #print(yaw_)
+        yaw_ = yaw_ - 2*math.pi
+    print('current yaw: {} yaw: {}'.format(current_yaw_,yaw_))
     return (yaw_ - current_yaw_)
 
 
 def rotate(degree):
     global yaw_,current_yaw_
+<<<<<<< HEAD
     sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom) 
     angular_z = 0.3 if degree>0 else -0.3
+=======
+    angular_z = 0.8 if degree>0 else -0.8
+>>>>>>> f4dce7ed5fb58c336d6ed6b610975075eff4fc2e
     pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
     msg = Twist()
     turn_angle=degree*math.pi/180
     target_yaw = current_yaw_+turn_angle
+    print("target_yaw: {} current_yaw:{}".format(target_yaw,current_yaw_))
     rospy.loginfo("turning by angle")
     yaw_error(target_yaw)
-    while yaw_error(target_yaw)>0.01 or yaw_error(target_yaw)<-0.01:
+    while yaw_error(target_yaw)>0.02 or yaw_error(target_yaw)<-0.02:
         msg.angular.z= angular_z
         msg.linear.x = 0
         pub.publish(msg)
-    msg.linear.x=0
     msg.angular.z=0
     pub.publish(msg)
     rospy.loginfo("turning successful")
@@ -61,6 +65,7 @@ def motion_go_straight(linear_velocity):
     msg.linear.x = linear_velocity
     pub.publish(msg)
 
+<<<<<<< HEAD
 def motion_go_left(linear_velocity):
     # rotate(90)
     # motion_go_straight(0.15)
@@ -73,9 +78,18 @@ def motion_go_left(linear_velocity):
     pub.publish(msg)
     time.sleep(1.5)
     
+=======
+def motion_go_left():
+    #time.sleep(2.5)
+    rotate(90)
+    motion_go_straight(0.15)
+    #time.sleep(3)
+    #motion_go_straight(0.0)
+>>>>>>> f4dce7ed5fb58c336d6ed6b610975075eff4fc2e
 
 def motion_go_right():
+    #time.sleep(2.5)
     rotate(-90)
     motion_go_straight(0.15)
-    time.sleep(3)
-    motion_go_straight(0.0)
+    #time.sleep(3)
+    #motion_go_straight(0.0)
