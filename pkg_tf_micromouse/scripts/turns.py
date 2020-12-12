@@ -37,12 +37,7 @@ def yaw_error(target_yaw):
 
 def rotate(degree):
     global yaw_,current_yaw_
-<<<<<<< HEAD
-    sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom) 
-    angular_z = 0.3 if degree>0 else -0.3
-=======
     angular_z = 0.8 if degree>0 else -0.8
->>>>>>> f4dce7ed5fb58c336d6ed6b610975075eff4fc2e
     pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
     msg = Twist()
     turn_angle=degree*math.pi/180

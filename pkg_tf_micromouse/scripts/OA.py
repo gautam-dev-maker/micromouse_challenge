@@ -27,7 +27,8 @@ def clbk_laser(msg):
       'RIGHT' : min(min(msg.ranges[0:20]), 10),
       'FRONT' : min(min(msg.ranges[170:190]), 10),
       'LEFT' : min(min(msg.ranges[329:359]), 10),
-      
+      'F_LEFT':
+      'F_RIGHT':
     }
 
 def motion():
