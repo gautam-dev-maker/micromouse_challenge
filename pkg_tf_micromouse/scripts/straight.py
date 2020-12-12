@@ -49,6 +49,13 @@ def clbk_laser(msg):
     }
     weighted_front=msg.ranges[125]-msg.ranges[143]
 
+def front_obst(front):
+    if front<0.12 :
+        return True
+    else :
+        return False
+    
+
 
 def motion():
     global sensors,yaw_
@@ -58,7 +65,6 @@ def motion():
     msg = Twist()
     linear_x=0.2
     angular_z=0
-
     k=sensors['RIGHT']+sensors['LEFT']
     angle=((k**2)-(0.16803**2))
     if angle>=0:
@@ -66,9 +72,9 @@ def motion():
         angle=angle/k
         angle=math.asin(angle)
         if sensors['RIGHT']<sensors['LEFT']:
-            angular_z=angle
-        else :
             angular_z=-angle
+        else :
+            angular_z=angle
         is_straight=False
     else :
         is_straight=True
@@ -81,6 +87,7 @@ def motion():
         if sensors['LEFT']<0.0553:
             angular_z=0.3
 
+    
     print("angular_z: {}".format(angular_z))
 
     msg.linear.x=linear_x

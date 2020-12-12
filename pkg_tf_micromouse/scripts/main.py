@@ -20,12 +20,12 @@ def main():
 
     
 	#motion_go_straight()
-    rotate(-90)
-    rotate(90)
-    rotate(90)
-    rotate(90)
-    rotate(90)
-    rotate(90)
+    right_turn()
+    #rotate(90)
+    #rotate(90)
+    #rotate(90)
+    #rotate(90)
+    #rotate(90)
 
 
     rate.sleep()
