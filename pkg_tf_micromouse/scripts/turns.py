@@ -86,7 +86,7 @@ def straight_until_noread_left():
     msg = Twist()
     while(sensor_l<0.09):
         print("left :{}".format(sensor_l))
-        msg.linear.x=0.3
+        msg.linear.x=0.4
         msg.angular.z=0
         pub.publish(msg)
     msg.linear.x=0
@@ -139,8 +139,31 @@ def straight_until_read_right():
     msg.angular.z=0
     pub.publish(msg)
 
+def rotate_angle(angle):
+    angular_z = 0.6 if angle>0 else -0.6
+    pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+    msg = Twist()
+    relative_angle = (math.pi*abs(angle))/180
+    msg.angular.z= angular_z
+    msg.linear.x = 0
+    pub.publish(msg)
+    t0 = rospy.Time.now().to_sec()
+    current_angle = 0
+    print("Target angle :{}".format(relative_angle))
+    while(current_angle < relative_angle):
+        print("Current angle :{}".format(current_angle))
+        msg.angular.z= angular_z
+        msg.linear.x = 0
+        pub.publish(msg)
+        t1 = rospy.Time.now().to_sec()
+        print("t0 {} t1 {}".format(t0,t1))
+        current_angle = abs(angular_z)*(t1-t0)
+    msg.angular.z= 0
+    msg.linear.x = 0
+    pub.publish(msg)
 
-def left_turn():
+
+def left_turn_curve():
     straight_until_noread_left()
     radius=0.08793
     v=0.1
@@ -167,7 +190,7 @@ def left_turn():
     rate.sleep()
     straight_for_time(0.1)
 
-def right_turn():
+def right_turn_curve():
     straight_until_noread_right()
     radius=0.08793
     v=0.2
@@ -192,6 +215,22 @@ def right_turn():
     pub.publish(msg)
     straight_for_time(0.5)
     
+<<<<<<< HEAD
+=======
+def left_turn_rotate():
+    straight_until_noread_left()
+    time=0.08793/0.4
+    straight_for_time(6*time)
+    rotate_angle(1.23*90)
+    straight_for_time(6*time)
+
+def right_turn_rotate():
+    straight_until_noread_right()
+    time=0.08793/0.4
+    straight_for_time(6*time)
+    rotate_angle(-1.23*90)
+    straight_for_time(6*time)
+>>>>>>> f4d665635f66fb57d7fe771e7976c361c29a5862
 
 def motion_go_straight(linear_velocity):
     pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
@@ -212,4 +251,7 @@ def motion_go_right():
     motion_go_straight(0.15)
     #time.sleep(3)
     #motion_go_straight(0.0)
+<<<<<<< HEAD
 
+=======
+>>>>>>> f4d665635f66fb57d7fe771e7976c361c29a5862
