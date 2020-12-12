@@ -42,6 +42,18 @@ def main():
 
     rate = rospy.Rate(20)
 
+<<<<<<< HEAD
+    
+	#motion_go_straight()
+    right_turn()
+    #rotate(90)
+    #rotate(90)
+    #rotate(90)
+    #rotate(90)
+    #rotate(90)
+
+=======
+>>>>>>> f4dce7ed5fb58c336d6ed6b610975075eff4fc2e
 
     while not rospy.is_shutdown():
         print("desired_yaw:- {}, ros_yaw:- {}".format(desired_yaw,ros_yaw))
