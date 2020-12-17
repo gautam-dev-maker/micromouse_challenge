@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <robot name="my_mm_robot" xmlns:xacro="https://www.ros.org/wiki/xacro" >
-    
+
   <material name="black">
     <color rgba="0.0 0.0 0.0 1.0"/>
   </material>
@@ -263,6 +263,6 @@
       <legacyModeNS>true</legacyModeNS>
       <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
     </plugin>
-  </gazebo>-->
+  </gazebo> -->
   
 </robot>

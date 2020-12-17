@@ -26,12 +26,6 @@ def clbk_odom(msg):
     
     current_yaw_ = euler[2]
 
-def clbk_laser(msg):
-    global sensor_l,sensor_c,sensor_r
-    # 360 / 5 = 72
-    sensor_l = msg.ranges[359]
-    sensor_c =  msg.ranges[179]
-    sensor_r = msg.ranges[0]
 
 def yaw_error(target_yaw):
     global current_yaw_ ,yaw_
@@ -43,10 +37,9 @@ def yaw_error(target_yaw):
     print('current yaw: {} yaw: {}'.format(current_yaw_,yaw_))
     return (yaw_ - current_yaw_)
 
-
-def rotate(degree):
+def rotate(degree,linear_velocity,angular_velocity):
     global yaw_,current_yaw_
-    angular_z = 0.8 if degree>0 else -0.8
+    angular_z = angular_velocity if degree>0 else -angular_velocity
     pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
     msg = Twist()
     turn_angle=degree*math.pi/180
@@ -54,204 +47,33 @@ def rotate(degree):
     print("target_yaw: {} current_yaw:{}".format(target_yaw,current_yaw_))
     rospy.loginfo("turning by angle")
     yaw_error(target_yaw)
-    while yaw_error(target_yaw)>0.02 or yaw_error(target_yaw)<-0.02:
+    while yaw_error(target_yaw)>0.03 or yaw_error(target_yaw)<-0.03:
         msg.angular.z= angular_z
-        msg.linear.x = 0
+        msg.linear.x=linear_velocity
         pub.publish(msg)
     msg.angular.z=0
+    msg.linear.x=0
     pub.publish(msg)
     rospy.loginfo("turning successful")
 
-def straight_for_time(t):
-    pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
-    msg = Twist()
-    t0 = rospy.Time.now().to_sec()
-    stop_time=t0+t
-    t1= rospy.Time.now().to_sec()
-    while(t1<stop_time):
-        countdown=stop_time-t1
-        print("countdown {}".format(countdown))
-        msg.linear.x=0.4
-        msg.angular.z=0
-        pub.publish(msg)
-        t1= rospy.Time.now().to_sec()
-    msg.linear.x=0
-    msg.angular.z=0
-    pub.publish(msg)
+def correct_yaw():
+    global yaw_,current_yaw_
+    yaw_degree=math.degrees(current_yaw_)
+    if 0<yaw_degree<=30 or -30<=yaw_degree<0 and yaw_degree!=0:
+        rotate(-yaw_degree,0,0.1)
+    elif 60<=yaw_degree<=120 and yaw_degree!=90:
+        rotate(90-yaw_degree,0,0.1)
+    elif 150<=yaw_degree<=180 and yaw_degree!=180:
+        rotate(180-yaw_degree,0,0.1)
+    elif -180<=yaw_degree<-150 and yaw_degree!=-180:
+        rotate(-yaw_degree-180,0,0.1)
+    elif -120 <= yaw_degree<=-60 and yaw_degree!=-90 :
+        rotate(-90-yaw_degree,0,0.1)
 
-def straight_until_noread_left():
-    global sensor_l,sensor_c,sensor_r
-    sub = rospy.Subscriber('/my_mm_robot/laser/scan', LaserScan, clbk_laser)
-    pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
-    msg = Twist()
-    while(sensor_l<0.09):
-        print("left :{}".format(sensor_l))
-        msg.linear.x=0.4
-        msg.angular.z=0
-        pub.publish(msg)
-    msg.linear.x=0
-    msg.angular.z=0
-    pub.publish(msg)
-
-def straight_until_noread_right():
-    global sensor_l,sensor_c,sensor_r
-    sub = rospy.Subscriber('/my_mm_robot/laser/scan', LaserScan, clbk_laser)
-    pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
-    msg = Twist()
-    while(sensor_r<0.09):
-        print("right :{}".format(sensor_r))
-        msg.linear.x=0.3
-        msg.angular.z=0
-        pub.publish(msg)
-    msg.linear.x=0
-    msg.angular.z=0
-    pub.publish(msg)
-
-def straight_until_read_left():
-    global sensor_l,sensor_c,sensor_r
-    sub = rospy.Subscriber('/my_mm_robot/laser/scan', LaserScan, clbk_laser)
-    pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
-    msg = Twist()
-    #print("sensorleft :{}".format(sensor_l))
-    while(True):
-        print("left :{}".format(sensor_l))
-        if sensor_l<0.9:
-            break
-        msg.linear.x=0.3
-        msg.angular.z=0
-        pub.publish(msg)
-    msg.linear.x=0
-    msg.angular.z=0
-    pub.publish(msg)
-
-def straight_until_read_right():
-    global sensor_l,sensor_c,sensor_r
-    sub = rospy.Subscriber('/my_mm_robot/laser/scan', LaserScan, clbk_laser)
-    pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
-    msg = Twist()
-    print("sensorright :{}".format(sensor_r))
-    while(sensor_r>0.09):
-        print("right :{}".format(sensor_r))
-        msg.linear.x=0.3
-        msg.angular.z=0
-        pub.publish(msg)
-    msg.linear.x=0
-    msg.angular.z=0
-    pub.publish(msg)
-
-def rotate_angle(angle):
-    angular_z = 0.6 if angle>0 else -0.6
-    pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
-    msg = Twist()
-    relative_angle = (math.pi*abs(angle))/180
-    msg.angular.z= angular_z
-    msg.linear.x = 0
-    pub.publish(msg)
-    t0 = rospy.Time.now().to_sec()
-    current_angle = 0
-    print("Target angle :{}".format(relative_angle))
-    while(current_angle < relative_angle):
-        print("Current angle :{}".format(current_angle))
-        msg.angular.z= angular_z
-        msg.linear.x = 0
-        pub.publish(msg)
-        t1 = rospy.Time.now().to_sec()
-        print("t0 {} t1 {}".format(t0,t1))
-        current_angle = abs(angular_z)*(t1-t0)
-    msg.angular.z= 0
-    msg.linear.x = 0
-    pub.publish(msg)
-
-
-def left_turn_curve():
-    straight_until_noread_left()
-    radius=0.08793
-    v=0.1
-    w=v/radius
-    duration=math.pi/(2*w)
-    pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
-    msg = Twist()
-    msg.linear.x=4*v
-    msg.angular.z=0.96*w
-    pub.publish(msg)
-    t0 = rospy.Time.now().to_sec()
-    stop_time=(t0+duration)*0.7
-    t1=  rospy.Time.now().to_sec()
-    while(t1<stop_time):
-        msg.linear.x=4*v
-        msg.angular.z=0.96*w
-        print("v={} w={}".format(v,w))
-        pub.publish(msg)
-        t1=  rospy.Time.now().to_sec()
-    msg.linear.x=0
-    msg.angular.z=0
-    pub.publish(msg)
-    rate=rospy.Rate(5)
-    rate.sleep()
-    straight_for_time(0.1)
-
-def right_turn_curve():
-    straight_until_noread_right()
-    radius=0.08793
-    v=0.2
-    w=-v/radius
-    duration=abs(math.pi/(2*w))
-    pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
-    msg = Twist()
-    msg.linear.x=4*v
-    msg.angular.z=0.96*w
-    pub.publish(msg)
-    t0 = rospy.Time.now().to_sec()
-    stop_time=(t0+duration)
-    t1=  rospy.Time.now().to_sec()
-    while(t1<stop_time):
-        msg.linear.x=4*v
-        msg.angular.z=0.96*w
-        print("v={} w={}".format(v,w))
-        pub.publish(msg)
-        t1=  rospy.Time.now().to_sec()
-    msg.linear.x=0
-    msg.angular.z=0
-    pub.publish(msg)
-    straight_for_time(0.5)
     
-<<<<<<< HEAD
-=======
-def left_turn_rotate():
-    straight_until_noread_left()
-    time=0.08793/0.4
-    straight_for_time(6*time)
-    rotate_angle(1.23*90)
-    straight_for_time(6*time)
-
-def right_turn_rotate():
-    straight_until_noread_right()
-    time=0.08793/0.4
-    straight_for_time(6*time)
-    rotate_angle(-1.23*90)
-    straight_for_time(6*time)
->>>>>>> f4d665635f66fb57d7fe771e7976c361c29a5862
-
 def motion_go_straight(linear_velocity):
     pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
     msg = Twist()
     msg.linear.x = linear_velocity
     pub.publish(msg)
 
-def motion_go_left():
-    #time.sleep(2.5)
-    rotate(90)
-    motion_go_straight(0.15)
-    #time.sleep(3)
-    #motion_go_straight(0.0)
-
-def motion_go_right():
-    #time.sleep(2.5)
-    rotate(-90)
-    motion_go_straight(0.15)
-    #time.sleep(3)
-    #motion_go_straight(0.0)
-<<<<<<< HEAD
-
-=======
->>>>>>> f4d665635f66fb57d7fe771e7976c361c29a5862

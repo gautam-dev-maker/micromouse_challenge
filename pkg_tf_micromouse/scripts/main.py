@@ -9,74 +9,394 @@ from directions import *
 from turns import *
 
 #global variables 
-pub=0
-desired_yaw=0
-ros_yaw=0
-
-
-# def adjust_yaw(angle):
-#     desired_yaw=desired_yaw+angle
-#     if(-(math.pi)<desired_yaw<-3.1 or desired_yaw<-(math.pi)):
-#         ros_yaw = -desired_yaw
-#     if(yaw_>math.pi):
-#         ros_yaw = math.pi - yaw_
-
-def clbk_odom(msg):
-    global ros_yaw
-    # yaw
-    # convert quaternions to euler angles, only extracting yaw angle for the robot
-    quaternion = (
-        msg.pose.pose.orientation.x,
-        msg.pose.pose.orientation.y,
-        msg.pose.pose.orientation.z,
-        msg.pose.pose.orientation.w)
-    euler = transformations.euler_from_quaternion(quaternion)
+pub=None
+sensors={
+    'RIGHT':0,
+    'RIGHT_MAX':0,
+    'FRIGHT':0,
+    'FRIGHT_MAX':0,
+    'FRONT':0,
+    'FLEFT':0,
+    'FLEFT_MAX':0,
+    'LEFT':0,
+    'LEFT_MAX':0,
     
-    ros_yaw= euler[2]
+}
+
+
+def clbk_laser(msg):
+    global sensors
+    # 360 / 5 = 72
+    # sensor_l = min(min(msg.ranges[305:360]), 10)
+    # sensor_c =  min(msg.ranges[180],10)
+    # sensor_r = min(min(msg.ranges[0:35]), 10)
+    sensors={
+        'RIGHT': min(min(msg.ranges[0:72]),10),
+        'RIGHT_MAX':min(max(msg.ranges[0:72]),10),
+        'FRIGHT': min(min(msg.ranges[72:144]),10),
+        'FRIGHT_MAX':min(max(msg.ranges[72:144]),10),
+        'FRONT': min(min(msg.ranges[144:216]),10),
+        'FLEFT': min(min(msg.ranges[216:288]),10),
+        'FLEFT_MAX': min(max(msg.ranges[216:288]),10),
+        'LEFT': min(min(msg.ranges[288:359]),10),
+        'LEFT_MAX':min(max(msg.ranges[288:359]),10),
+    }
+
 
 def main():
-    global ros_yaw,desired_yaw
-    sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom) 
+    global sensors
+    sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom)
     sub = rospy.Subscriber('/my_mm_robot/laser/scan', LaserScan, clbk_laser)
     rospy.init_node('directions')
-
+    msg=Twist()
     rate = rospy.Rate(20)
-
-<<<<<<< HEAD
     # while not rospy.is_shutdown():
-    #     print("desired_yaw:- {}, ros_yaw:- {}".format(desired_yaw,ros_yaw))
-    #     if desired_yaw-ros_yaw>0.01 or desired_yaw-ros_yaw<-0.01:
-    #         rotate((desired_yaw-ros_yaw)*180/math.pi)
-    # # rotate(45)
-    # # rotate(45)
+    #     print("right: {:,.3f},fright: {:,.3f}, front: {:,.3f},fleft_max: {:,.3f},fleft: {:,.3f},left_max: {:,.3f},left_min: {:,.3f}".format(sensors['RIGHT'],sensors['FRIGHT'],sensors['FRONT'],sensors['FLEFT_MAX'],sensors['FLEFT'],sensors['LEFT_MAX'],sensors['LEFT']))
     while not rospy.is_shutdown():
-        left_turn()
+        # IF left is available it will take left
+        if sensors['LEFT']>0.16 and sensors['LEFT_MAX']>0.16:
+            print("left: {}, left_max: {}".format(sensors['LEFT'],sensors['LEFT_MAX']))
+            rotate(90,0.225,0.5)
+            correct_yaw()
         
+        # IF right is available it will take right
+        elif sensors['RIGHT']>0.16 and sensors['RIGHT_MAX']>0.16:
+            print("Right: {}, Right_max: {}".format(sensors['RIGHT'],sensors['RIGHT_MAX']))
+            rotate(-90,0.225,0.5)
+            correct_yaw()
+
+        # IF It is a dead end it will take a UTURN
+        elif sensors['FRONT']<0.05 and sensors['FLEFT']<0.08 and sensors['FRIGHT']<0.08:
+            print("FRONT: {}, FLEFT: {}, FRIGHT: {}".format(sensors['FRONT'],sensors['FLEFT'],sensors['FRIGHT']))
+            motion_go_straight(0)
+            rotate(90,0,0.5)
+            rotate(90,0,0.5)
+            correct_yaw()
+
+        # FOR GOING STRAIGHT    
+        else :
+            print("FRONT: {}, FLEFT: {}, FRIGHT: {}".format(sensors['FRONT'],sensors['FLEFT'],sensors['FRIGHT']))
+            motion_go_straight(0.2)
+            correct_yaw()
         
-=======
-    
-	#motion_go_straight()
-    right_turn_rotate()
-    #rotate(90)
-    #rotate(90)
-    #rotate(90)
-    #rotate(90)
-    #rotate(90)
-
-
-    #while 1:
-    #    if(Is_Straight_Available()):
-    #        motion_go_straight(0.1)
-    #    elif(Is_Right_Available_Available()):
-    #        motion_go_right()
-    #       break
-    #    else:
-    #        motion_go_straight(0.0)
->>>>>>> f4d665635f66fb57d7fe771e7976c361c29a5862
-
-    
 
 if __name__=='__main__':
     main()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

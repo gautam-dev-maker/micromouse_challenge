@@ -13,19 +13,7 @@ sensors = {'RIGHT':0,'FRONT':0,'LEFT':0}
 yaw_=0
 weighted_front=0
 
-#pid values
-
-kp=1
-ki=0
-kd=0
-
-integrat_max=0
-integrat_min=0
-
-integrat_state=0
-
-prev_error=0
-error=0
+is_straight=False
 
 def clbk_odom(msg):
     global yaw_
@@ -42,26 +30,57 @@ def clbk_odom(msg):
 
 def clbk_laser(msg):
     global sensors,weighted_front
+    # sensors={
+    #     'RIGHT':msg.ranges[0],
+    #     'FRONT':msg.ranges[179],
+    #     'LEFT':msg.ranges[359],
+    # }
     sensors={
         'RIGHT':msg.ranges[0],
         'FRONT':msg.ranges[179],
-        'LEFT':msg.ranges[359],
+        'LEFT': msg.ranges[359],
     }
     weighted_front=msg.ranges[125]-msg.ranges[143]
+
 
 def front_obst(front):
     if front<0.12 :
         return True
     else :
         return False
-    
 
+def filter(value):
+    value=value/0.16803
+    return 0.16803*value
 
-def motion():
+def motion_avoid_left():
     global sensors,yaw_
+    pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+    sub = rospy.Subscriber('/my_mm_robot/laser/scan', LaserScan, clbk_laser)
+    sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom)
+    msg=Twist()
+    msg.linear.x=0
+    angular_z=0
+    k=sensors['RIGHT']+sensors['LEFT']
+    angle=((k**2)-(filter(k)**2))
+    if angle>=0 and k!=0:
+        angle=angle**0.5
+        angle=angle/k
+        angle=math.asin(angle)
+        if sensors['RIGHT']<sensors['LEFT']:
+            angular_z=-angle
+        else :
+            angular_z=angle
+    msg.angular.z=angular_z
+    print("angular_z: {}".format(angular_z))
+    pub.publish(msg)
+    
+def motion_go_linear():
+    global sensors,yaw_,is_straight
+    pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
     sub = rospy.Subscriber('/my_mm_robot/laser/scan', LaserScan, clbk_laser)
     sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom) 
-    is_straight=False
+    
     msg = Twist()
     linear_x=0.2
     angular_z=0
@@ -72,9 +91,9 @@ def motion():
         angle=angle/k
         angle=math.asin(angle)
         if sensors['RIGHT']<sensors['LEFT']:
-            angular_z=-angle
-        else :
             angular_z=angle
+        else :
+            angular_z=-angle
         is_straight=False
     else :
         is_straight=True
@@ -82,10 +101,10 @@ def motion():
     if is_straight:
 
         if sensors['RIGHT']<0.0553:
-            angular_z=0.3
+            angular_z=0.1
     
         if sensors['LEFT']<0.0553:
-            angular_z=-0.3
+            angular_z=-0.1
 
     
     print("angular_z: {}".format(angular_z))
@@ -99,10 +118,11 @@ def main():
     global pub
     global sensors
     rospy.init_node('Laser_readings', anonymous=True)
-    pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
-    sub = rospy.Subscriber('/dd_urdf/laser_scan', LaserScan, clbk_laser)
+    # pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+    # sub = rospy.Subscriber('/dd_urdf/laser_scan', LaserScan, clbk_laser)
     while not rospy.is_shutdown():
-        motion()
+        # motion_avoid_left()
+        motion_go_linear()
         
         
     rospy.spin()
