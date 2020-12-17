@@ -43,7 +43,7 @@ def yaw_error(target_yaw):
     global current_yaw_ ,yaw_
     yaw_ = target_yaw
     if(-(math.pi)<target_yaw<-3.1 or target_yaw<-(math.pi)):
-        yaw_ = -target_yaw
+        yaw_ = yaw_ + 2*math.pi
     if(yaw_>math.pi):
         yaw_ = yaw_ - 2*math.pi
     print('current yaw: {} yaw: {}'.format(current_yaw_,yaw_))
