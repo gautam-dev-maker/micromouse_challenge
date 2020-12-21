@@ -17,14 +17,16 @@ pub = 0
 current_yaw_=0
 
 sensors={
-
+    'RIGHTMOST':0,
     'RIGHT':    0,
+    'RIGHT_AVG':0,
     'RIGHT_MAX':0,
     'FRIGHT':   0,
     'FRIGHT_MAX':0,
     'FRONT':    0,
     'FLEFT':    0,
     'FLEFT_MAX':0,
+    'LEFTMOST':0,
     'LEFT':     0,
     'LEFT_AVG': 0,
     'LEFT_MAX': 0,
@@ -64,7 +66,7 @@ def rotate(degree,linear_velocity,angular_velocity):
     print("target_yaw: {} current_yaw:{}".format(target_yaw,current_yaw_))
     rospy.loginfo("turning by angle")
     yaw_error(target_yaw)
-    while yaw_error(target_yaw)>0.03 or yaw_error(target_yaw)<-0.03:
+    while yaw_error(target_yaw)>0.06 or yaw_error(target_yaw)<-0.06:
         msg.angular.z= angular_z
         msg.linear.x=linear_velocity
         pub.publish(msg)
@@ -155,6 +157,7 @@ def motion_go_straight(linear_velocity):
 def clbk_laser(msg):
     global sensors
     sensors={
+        'RIGHTMOST':msg.ranges[0],
         'RIGHT': min(min(msg.ranges[0:71]),10),
         'RIGHT_MAX':min(max(msg.ranges[0:71]),10),
         'RIGHT_AVG':Average(msg.ranges[0:71]),
@@ -164,7 +167,8 @@ def clbk_laser(msg):
         'FRONT': msg.ranges[179],
         'FLEFT': min(min(msg.ranges[216:287]),10),
         'FLEFT_MAX': min(max(msg.ranges[216:287]),10),
-       'LEFT': min(min(msg.ranges[288:359]),10),
+        'LEFTMOST':msg.ranges[359],
+        'LEFT': min(min(msg.ranges[288:359]),10),
         'LEFT_AVG':Average(msg.ranges[288:359]),
         'LEFT_MAX':min(max(msg.ranges[288:359]),10),
     }
