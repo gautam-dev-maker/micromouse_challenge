@@ -36,15 +36,18 @@ def backtrack():
             list_stack.append(current_list)
             steps_list.append(next_step)
     if last_step=='s':
-        while(is_left_available or is_right_available):
+        while not (is_left_available or is_right_available):
+            print('in the FIRST LOOP in backtrack when last step was S ')
             go_straight(0.2)
-        while(not (is_left_available or is_right_available)):
+        while (is_left_available or is_right_available):
+            print('in the SECOND LOOP in the backtrack when last step was S')
             go_straight(0.2)
         backtrack()
 
 def dfs():
     while(True):
         if ((not is_left_available()) and (not is_right_available()) and is_straight_available()):
+            correct_yaw()
             go_straight(0.2)
             print("condition 1")
         elif (is_left_available() or is_right_available()):
@@ -57,7 +60,11 @@ def dfs():
                 current_list.append('s')
             if is_right_available():
                 current_list.append('r')
+                if sensors['LEFT_MAX']>0.3 and (not is_left_available()):
+                    current_list.append('l')
             if is_left_available():
+                if sensors['RIGHT_MAX']>0.3 and (not is_right_available()):
+                    current_list.append('r')
                 current_list.append('l')
             next_step=current_list.pop()
             steps_list.append(next_step)
@@ -67,6 +74,11 @@ def dfs():
             if next_step=='r':
                 turn_right()
         elif not ((is_straight_available()) or (is_left_available()) or (is_right_available())):
+            print('LEFT_MAX {} RIGHT_MAX {}'.format(sensors['LEFT_MAX'],sensors['RIGHT_MAX']))
+            if sensors['LEFT_MAX']>0.2 or sensors['RIGHT_MAX']>0.2:
+                print('CHECKING BEFORE UTURN')
+                go_straight()
+                continue
             uturn()
             backtrack()
 

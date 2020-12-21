@@ -7,6 +7,9 @@ from geometry_msgs.msg import Twist
 from sensor_msgs.msg import LaserScan
 import math
 
+def Average(lst): 
+    return sum(lst) / len(lst) 
+
 #global variables 
 pub=None
 yaw_ = 0
@@ -27,9 +30,6 @@ sensors={
     'LEFT_MAX': 0,
 
 }
-
-def Average(lst): 
-    return sum(lst) / len(lst) 
 
 def clbk_odom(msg):
     global yaw_,current_yaw_
@@ -76,21 +76,29 @@ def rotate(degree,linear_velocity,angular_velocity):
 def correct_yaw():
     global yaw_,current_yaw_
     yaw_degree=math.degrees(current_yaw_)
-    
     if 0<yaw_degree<=30 or -30<=yaw_degree<0 and yaw_degree!=0:
-        rotate(-yaw_degree,0,0.1)
+        error=-yaw_degree
+        if abs(error)>5:
+            rotate(-yaw_degree,0,0.1)
     elif 60<=yaw_degree<=120 and yaw_degree!=90:
-        rotate(90-yaw_degree,0,0.1)
+        error=90-yaw_degree
+        if abs(error)>5:
+            rotate(90-yaw_degree,0,0.1)
     elif 150<=yaw_degree<=180 and yaw_degree!=180:
-        rotate(180-yaw_degree,0,0.1)
+        error=180-yaw_degree
+        if abs(error)>5:
+            rotate(180-yaw_degree,0,0.1)
     elif -180<=yaw_degree<-150 and yaw_degree!=-180:
-        rotate(-yaw_degree-180,0,0.1)
+        error=-yaw_degree-180
+        if abs(error)>5:
+            rotate(-yaw_degree-180,0,0.1)
     elif -120 <= yaw_degree<=-60 and yaw_degree!=-90 :
-        rotate(-90-yaw_degree,0,0.1)
+        error=-90-yaw_degree
+        if abs(error)>5:
+            rotate(-90-yaw_degree,0,0.1)
 
 def is_left_available():
     global sensors
-    # if sensors['LEFT']>0.16 and sensors['LEFT_MAX']>0.16:
     if sensors['LEFT_AVG']>0.25 or sensors['LEFT']>0.16:
         return True
     return False
@@ -103,7 +111,7 @@ def is_right_available():
 
 def is_straight_available():
     global sensors
-    if sensors['FRONT']>0.165:
+    if sensors['FRONT']>0.16:
        return True
     return False
     # return not (is_left_available() or is_right_available() or is_uturn_available())
@@ -117,7 +125,7 @@ def is_uturn_available():
 def go_straight(linear_velocity):
     pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
     msg = Twist()
-    # correct_yaw()
+    #correct_yaw()
     msg.linear.x = linear_velocity
     pub.publish(msg)
 
@@ -144,23 +152,24 @@ def motion_go_straight(linear_velocity):
     pub.publish(msg)
 
 
-
-
 def clbk_laser(msg):
     global sensors
     sensors={
-        'RIGHT': min(min(msg.ranges[0:72]),10),
-        'RIGHT_MAX':min(max(msg.ranges[0:72]),10),
+        # 'RIGHT': min(min(msg.ranges[0:72]),10),
+        'RIGHT': min(min(msg.ranges[0:59]),10),
+        # 'RIGHT_MAX':min(max(msg.ranges[0:72]),10),
+        'RIGHT_MAX':min(max(msg.ranges[0:59]),10),
         'FRIGHT': min(min(msg.ranges[72:144]),10),
         'FRIGHT_MAX':min(max(msg.ranges[72:144]),10),
-        'FRONT': min(min(msg.ranges[144:216]),10),
+        # 'FRONT': min(max(msg.ranges[144:216]),10),
+        'FRONT': msg.ranges[179],
         'FLEFT': min(min(msg.ranges[216:288]),10),
         'FLEFT_MAX': min(max(msg.ranges[216:288]),10),
-        'LEFT': min(min(msg.ranges[288:359]),10),
+        # 'LEFT': min(min(msg.ranges[288:359]),10),
+       'LEFT': min(min(msg.ranges[288:359]),10),
         'LEFT_AVG':Average(msg.ranges[288:359]),
-        'LEFT_MAX':min(max(msg.ranges[288:359]),10),
+        'LEFT_MAX':min(max(msg.ranges[300:359]),10),
     }
-
 
 
 
