@@ -3,29 +3,30 @@
 from main import *
 list_stack=[]
 steps_list=[]
-
+vel=0.2
 def backtrack():
-    global list_stack,steps_list
+    global list_stack,steps_list,vel
     current_list=list_stack.pop()
     last_step=steps_list.pop()
     if last_step=='l':
         while (not is_right_available()):
-            go_straight(0.2)
+            go_straight(vel)
         if len(current_list)==0:
             turn_right()
             backtrack()
         else:
             next_step=current_list.pop()
             if next_step=='r':
-                while(is_right_available):
-                    go_straight(0.2)
+                while sensors['RIGHTMOST']>0.12:
+                    print('LAST STEP L NEXT STEP R SO GOING STRAIGHT')
+                    go_straight(vel)
             if next_step=='s':
                 turn_left()
             list_stack.append(current_list)
             steps_list.append(next_step)
     if last_step=='r':
         while (not is_left_available()):
-            go_straight(0.2)
+            go_straight(vel)
         if len(current_list)==0:
             turn_left()
             backtrack()
@@ -38,17 +39,18 @@ def backtrack():
     if last_step=='s':
         while not (is_left_available or is_right_available):
             print('in the FIRST LOOP in backtrack when last step was S ')
-            go_straight(0.2)
-        while (is_left_available or is_right_available):
+            go_straight(vel)
+        while (sensors['RIGHTMOST']>0.12 or sensors['LEFTMOST']>0.12):
             print('in the SECOND LOOP in the backtrack when last step was S')
-            go_straight(0.2)
+            go_straight(vel)
         backtrack()
 
 def dfs():
     while(True):
+        global vel
         if ((not is_left_available()) and (not is_right_available()) and is_straight_available()):
             correct_yaw()
-            go_straight(0.2)
+            go_straight(vel)
             print("condition 1")
         elif (is_left_available() or is_right_available()):
             print("condition 2")
@@ -81,7 +83,7 @@ def dfs():
         else:
             print('condition 4')
             correct_yaw()
-            go_straight(0.2)
+            go_straight(vel)
 
 def main():
     global sensors
