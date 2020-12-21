@@ -3,7 +3,7 @@
 from main import *
 list_stack=[]
 steps_list=[]
-vel=0.2
+vel=0.3
 def backtrack():
     global list_stack,steps_list,vel
     current_list=list_stack.pop()
@@ -17,7 +17,7 @@ def backtrack():
         else:
             next_step=current_list.pop()
             if next_step=='r':
-                while sensors['RIGHTMOST']>0.12:
+                while sensors['RIGHTMOST']>0.16:
                     print('LAST STEP L NEXT STEP R SO GOING STRAIGHT')
                     go_straight(vel)
             if next_step=='s':
@@ -37,10 +37,10 @@ def backtrack():
             list_stack.append(current_list)
             steps_list.append(next_step)
     if last_step=='s':
-        while not (is_left_available or is_right_available):
+        while not (is_left_available() or is_right_available()):
             print('in the FIRST LOOP in backtrack when last step was S ')
             go_straight(vel)
-        while (sensors['RIGHTMOST']>0.12 or sensors['LEFTMOST']>0.12):
+        while (sensors['RIGHTMOST']>0.16 or sensors['LEFTMOST']>0.16):
             print('in the SECOND LOOP in the backtrack when last step was S')
             go_straight(vel)
         backtrack()
@@ -50,6 +50,7 @@ def dfs():
         global vel
         if ((not is_left_available()) and (not is_right_available()) and is_straight_available()):
             correct_yaw()
+            check_wall()
             go_straight(vel)
             print("condition 1")
         elif (is_left_available() or is_right_available()):
