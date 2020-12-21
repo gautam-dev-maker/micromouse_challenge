@@ -18,17 +18,20 @@ def clbk_laser(msg):
     sensors={
         'RIGHT': min(min(msg.ranges[0:71]),10),
         'RIGHT_MAX':min(max(msg.ranges[0:71]),10),
-        'FRIGHT': min(min(msg.ranges[72:144]),10),
-        'FRIGHT_MAX': min(max(msg.ranges[72:144]),10),
-        'FRONT': min(min(msg.ranges[144:216]),10),
-        'FLEFT': min(min(msg.ranges[216:288]),10),
-        'FLEFT_MAX': min(max(msg.ranges[216:288]),10),
-        'LEFT': Average(msg.ranges[288:359]),
+        'RIGHT_AVG':Average(msg.ranges[0:71]),
+        'FRIGHT': min(min(msg.ranges[72:143]),10),
+        'FRIGHT_MAX':min(max(msg.ranges[72:143]),10),
+        # 'FRONT': min(max(msg.ranges[144:215]),10),
+        'FRONT': msg.ranges[179],
+        'FLEFT': min(min(msg.ranges[216:287]),10),
+        'FLEFT_MAX': min(max(msg.ranges[216:287]),10),
+       'LEFT': min(min(msg.ranges[288:359]),10),
+        'LEFT_AVG':Average(msg.ranges[288:359]),
         'LEFT_MAX':min(max(msg.ranges[288:359]),10),
     }
     # print("Right: {},Front: {}, Left: {}, FLEFT: {}".format(sensors['RIGHT'],sensors['FRONT'],sensors['LEFT'],sensors['FLEFT']))
     # print("FLEFT: {0:.3f}, FLEFT_MAX: {0:.3f}, left: {0:.3f}, left_max: {0:.3f}".format(sensors['FLEFT'],sensors['FLEFT_MAX'],sensors['LEFT'],sensors['LEFT_MAX']))
-    print("LEFT: {0:.3f}".format(sensors['LEFT']))
+    print("FRONT: {0:.3f}".format(sensors['FRONT']))
 
 def main():
     rospy.init_node("reading_sensors")

@@ -20,6 +20,7 @@ sensors={
 
     'RIGHT':    0,
     'RIGHT_MAX':0,
+    'RIGHT_AVG':0,
     'FRIGHT':   0,
     'FRIGHT_MAX':0,
     'FRONT':    0,
@@ -43,6 +44,7 @@ def clbk_odom(msg):
     euler = transformations.euler_from_quaternion(quaternion)
     
     current_yaw_ = euler[2]
+
 
 def yaw_error(target_yaw):
     global current_yaw_ ,yaw_
@@ -72,6 +74,8 @@ def rotate(degree,linear_velocity,angular_velocity):
     msg.linear.x=0
     pub.publish(msg)
     rospy.loginfo("turning successful")
+
+
 
 def correct_yaw():
     global yaw_,current_yaw_
@@ -124,6 +128,7 @@ def is_uturn_available():
 
 def go_straight(linear_velocity):
     pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+    print("going straight with velocity {}".format(linear_velocity))
     msg = Twist()
     #correct_yaw()
     msg.linear.x = linear_velocity
@@ -169,5 +174,21 @@ def clbk_laser(msg):
         'LEFT_MAX':min(max(msg.ranges[288:359]),10),
     }
 
-
+def correct_dist():
+    global sensors
+    sub = rospy.Subscriber('/my_mm_robot/laser/scan', LaserScan, clbk_laser)
+    sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom)
+    correct_yaw()
+    print("correcting the wall distance, rotating by 90")
+    rotate(-90,0,0.5)
+    print("now going straight")
+    while sensors['FRONT']>0.07:
+        print("front: {}".format(sensors['FRONT']))
+        go_straight(0.05)
+        if sensors['FRONT']<0.05:
+            go_straight(0)
+            break
+    rotate(90,0,0.5)
+        
+    
 
