@@ -99,26 +99,26 @@ def correct_yaw():
 
 def is_left_available():
     global sensors
-    if sensors['LEFT_AVG']>0.25 or sensors['LEFT']>0.16:
+    if sensors['LEFT_AVG']>0.35 or sensors['LEFT']>0.12:
         return True
     return False
 
 def is_right_available():
     global sensors
-    if sensors['RIGHT']>0.16 and sensors['RIGHT_MAX']>0.16:
+    if sensors['RIGHT_AVG']>0.35 or sensors['RIGHT']>0.12:
         return True
     return False
 
 def is_straight_available():
     global sensors
-    if sensors['FRONT']>0.16:
+    if sensors['FRONT']>0.17:
        return True
     return False
     # return not (is_left_available() or is_right_available() or is_uturn_available())
 
 def is_uturn_available():
     global sensors
-    if sensors['FRONT']<0.05 and sensors['FLEFT']<0.08 and sensors['FRIGHT']<0.08:
+    if sensors['FRONT']<0.08 and sensors['FLEFT']<0.08 and sensors['FRIGHT']<0.08:
         return True
     return False
 
@@ -155,20 +155,18 @@ def motion_go_straight(linear_velocity):
 def clbk_laser(msg):
     global sensors
     sensors={
-        # 'RIGHT': min(min(msg.ranges[0:72]),10),
-        'RIGHT': min(min(msg.ranges[0:59]),10),
-        # 'RIGHT_MAX':min(max(msg.ranges[0:72]),10),
-        'RIGHT_MAX':min(max(msg.ranges[0:59]),10),
-        'FRIGHT': min(min(msg.ranges[72:144]),10),
-        'FRIGHT_MAX':min(max(msg.ranges[72:144]),10),
-        # 'FRONT': min(max(msg.ranges[144:216]),10),
+        'RIGHT': min(min(msg.ranges[0:71]),10),
+        'RIGHT_MAX':min(max(msg.ranges[0:71]),10),
+        'RIGHT_AVG':Average(msg.ranges[0:71]),
+        'FRIGHT': min(min(msg.ranges[72:143]),10),
+        'FRIGHT_MAX':min(max(msg.ranges[72:143]),10),
+        # 'FRONT': min(max(msg.ranges[144:215]),10),
         'FRONT': msg.ranges[179],
-        'FLEFT': min(min(msg.ranges[216:288]),10),
-        'FLEFT_MAX': min(max(msg.ranges[216:288]),10),
-        # 'LEFT': min(min(msg.ranges[288:359]),10),
+        'FLEFT': min(min(msg.ranges[216:287]),10),
+        'FLEFT_MAX': min(max(msg.ranges[216:287]),10),
        'LEFT': min(min(msg.ranges[288:359]),10),
         'LEFT_AVG':Average(msg.ranges[288:359]),
-        'LEFT_MAX':min(max(msg.ranges[300:359]),10),
+        'LEFT_MAX':min(max(msg.ranges[288:359]),10),
     }
 
 

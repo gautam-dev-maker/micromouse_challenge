@@ -16,14 +16,13 @@ yaw_=0
 def clbk_laser(msg):
     # 145 degrees sensor divided into 3 sensors
     sensors={
-        'RIGHT': min(min(msg.ranges[0:72]),10),
-        'RIGHT_MAX':min(max(msg.ranges[0:72]),10),
+        'RIGHT': min(min(msg.ranges[0:71]),10),
+        'RIGHT_MAX':min(max(msg.ranges[0:71]),10),
         'FRIGHT': min(min(msg.ranges[72:144]),10),
-        'FRIGHT_MAX':min(max(msg.ranges[72:144]),10),
+        'FRIGHT_MAX': min(max(msg.ranges[72:144]),10),
         'FRONT': min(min(msg.ranges[144:216]),10),
         'FLEFT': min(min(msg.ranges[216:288]),10),
         'FLEFT_MAX': min(max(msg.ranges[216:288]),10),
-        # 'LEFT': min(min(msg.ranges[288:359]),10),
         'LEFT': Average(msg.ranges[288:359]),
         'LEFT_MAX':min(max(msg.ranges[288:359]),10),
     }

@@ -60,11 +60,11 @@ def dfs():
                 current_list.append('s')
             if is_right_available():
                 current_list.append('r')
-                if sensors['LEFT_MAX']>0.3 and (not is_left_available()):
-                    current_list.append('l')
+                # if sensors['LEFT_MAX']>0.3 and (not is_left_available()):
+                    # current_list.append('l')
             if is_left_available():
-                if sensors['RIGHT_MAX']>0.3 and (not is_right_available()):
-                    current_list.append('r')
+                # if sensors['RIGHT_MAX']>0.3 and (not is_right_available()):
+                    # current_list.append('r')
                 current_list.append('l')
             next_step=current_list.pop()
             steps_list.append(next_step)
@@ -73,14 +73,15 @@ def dfs():
                 turn_left()
             if next_step=='r':
                 turn_right()
-        elif not ((is_straight_available()) or (is_left_available()) or (is_right_available())):
-            print('LEFT_MAX {} RIGHT_MAX {}'.format(sensors['LEFT_MAX'],sensors['RIGHT_MAX']))
-            if sensors['LEFT_MAX']>0.2 or sensors['RIGHT_MAX']>0.2:
-                print('CHECKING BEFORE UTURN')
-                go_straight()
-                continue
+        # elif not ((is_straight_available()) or (is_left_available()) or (is_right_available())):
+        elif is_uturn_available():
+            print('condition 3')
             uturn()
             backtrack()
+        else:
+            print('condition 4')
+            correct_yaw()
+            go_straight(0.2)
 
 def main():
     global sensors
