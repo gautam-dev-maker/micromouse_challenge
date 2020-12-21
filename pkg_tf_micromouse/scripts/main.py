@@ -211,6 +211,25 @@ def avoid_right_wall():
             break
     rotate(-90,0,1)
     correct_yaw()
+
+def check_left_wall():
+    global sensors 
+    sub = rospy.Subscriber('/my_mm_robot/laser/scan', LaserScan, clbk_laser)
+    sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom)
+    correct_yaw()
+    if sensors['LEFT']<0.04:
+        avoid_left_wall()
+
+def check_right_wall():
+    global sensors 
+    sub = rospy.Subscriber('/my_mm_robot/laser/scan', LaserScan, clbk_laser)
+    sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom)
+    correct_yaw()
+    if sensors['RIGHT']<0.04:
+        avoid_right_wall()
+
+
+
         
     
 

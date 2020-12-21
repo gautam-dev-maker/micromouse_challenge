@@ -16,7 +16,8 @@ def main():
     # sub = rospy.Subscriber('/dd_urdf/laser_scan', LaserScan, clbk_laser)
    
         # motion_avoid_left()
-    avoid_left_wall()
+    # check_left_wall()
+    # check_right_wall()
         
         
     rospy.spin()
