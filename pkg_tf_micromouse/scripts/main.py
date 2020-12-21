@@ -178,13 +178,13 @@ def clbk_laser(msg):
         'LEFT_MAX':min(max(msg.ranges[288:359]),10),
     }
 
-def correct_dist():
+def avoid_left_wall():
     global sensors
     sub = rospy.Subscriber('/my_mm_robot/laser/scan', LaserScan, clbk_laser)
     sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom)
     correct_yaw()
     print("correcting the wall distance, rotating by 90")
-    rotate(-90,0,0.5)
+    rotate(-90,0,1)
     print("now going straight")
     while sensors['FRONT']>0.07:
         print("front: {}".format(sensors['FRONT']))
@@ -192,7 +192,25 @@ def correct_dist():
         if sensors['FRONT']<0.05:
             go_straight(0)
             break
-    rotate(90,0,0.5)
+    rotate(90,0,1)
+    correct_yaw()
+
+def avoid_right_wall():
+    global sensors
+    sub = rospy.Subscriber('/my_mm_robot/laser/scan', LaserScan, clbk_laser)
+    sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom)
+    correct_yaw()
+    print("correcting the wall distance, rotating by 90")
+    rotate(90,0,1)
+    print("now going straight")
+    while sensors['FRONT']>0.07:
+        print("front: {}".format(sensors['FRONT']))
+        go_straight(0.1)
+        if sensors['FRONT']<0.05:
+            go_straight(0)
+            break
+    rotate(-90,0,1)
+    correct_yaw()
         
     
 
