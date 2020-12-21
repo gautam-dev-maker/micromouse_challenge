@@ -8,17 +8,28 @@ from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from tf import transformations
 
+def Average(lst): 
+    return sum(lst) / len(lst) 
+
 yaw_=0
 
 def clbk_laser(msg):
     # 145 degrees sensor divided into 3 sensors
-    sensors = {
-      'RIGHT' : min(min(msg.ranges[0:20]), 10),
-      'FRONT' : min(min(msg.ranges[170:190]), 10),
-      'LEFT' : min(min(msg.ranges[329:359]), 10),
-      'FLEFT': min(max(msg.ranges[240:300]), 10),
+    sensors={
+        'RIGHT': min(min(msg.ranges[0:72]),10),
+        'RIGHT_MAX':min(max(msg.ranges[0:72]),10),
+        'FRIGHT': min(min(msg.ranges[72:144]),10),
+        'FRIGHT_MAX':min(max(msg.ranges[72:144]),10),
+        'FRONT': min(min(msg.ranges[144:216]),10),
+        'FLEFT': min(min(msg.ranges[216:288]),10),
+        'FLEFT_MAX': min(max(msg.ranges[216:288]),10),
+        # 'LEFT': min(min(msg.ranges[288:359]),10),
+        'LEFT': Average(msg.ranges[288:359]),
+        'LEFT_MAX':min(max(msg.ranges[288:359]),10),
     }
-    print("Right: {},Front: {}, Left: {}, FLEFT: {}".format(sensors['RIGHT'],sensors['FRONT'],sensors['LEFT'],sensors['FLEFT']))
+    # print("Right: {},Front: {}, Left: {}, FLEFT: {}".format(sensors['RIGHT'],sensors['FRONT'],sensors['LEFT'],sensors['FLEFT']))
+    # print("FLEFT: {0:.3f}, FLEFT_MAX: {0:.3f}, left: {0:.3f}, left_max: {0:.3f}".format(sensors['FLEFT'],sensors['FLEFT_MAX'],sensors['LEFT'],sensors['LEFT_MAX']))
+    print("LEFT: {0:.3f}".format(sensors['LEFT']))
 
 def main():
     rospy.init_node("reading_sensors")

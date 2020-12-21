@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 
 import rospy
-
 from nav_msgs.msg import Odometry
 from tf import transformations
 from geometry_msgs.msg import Twist
@@ -12,19 +11,25 @@ import math
 pub=None
 yaw_ = 0
 pub = 0
+current_yaw_=0
 
 sensors={
-    'RIGHT':0,
+
+    'RIGHT':    0,
     'RIGHT_MAX':0,
-    'FRIGHT':0,
+    'FRIGHT':   0,
     'FRIGHT_MAX':0,
-    'FRONT':0,
-    'FLEFT':0,
+    'FRONT':    0,
+    'FLEFT':    0,
     'FLEFT_MAX':0,
-    'LEFT':0,
-    'LEFT_MAX':0,
-    
+    'LEFT':     0,
+    'LEFT_AVG': 0,
+    'LEFT_MAX': 0,
+
 }
+
+def Average(lst): 
+    return sum(lst) / len(lst) 
 
 def clbk_odom(msg):
     global yaw_,current_yaw_
@@ -71,6 +76,7 @@ def rotate(degree,linear_velocity,angular_velocity):
 def correct_yaw():
     global yaw_,current_yaw_
     yaw_degree=math.degrees(current_yaw_)
+    
     if 0<yaw_degree<=30 or -30<=yaw_degree<0 and yaw_degree!=0:
         rotate(-yaw_degree,0,0.1)
     elif 60<=yaw_degree<=120 and yaw_degree!=90:
@@ -82,12 +88,62 @@ def correct_yaw():
     elif -120 <= yaw_degree<=-60 and yaw_degree!=-90 :
         rotate(-90-yaw_degree,0,0.1)
 
+def is_left_available():
+    global sensors
+    # if sensors['LEFT']>0.16 and sensors['LEFT_MAX']>0.16:
+    if sensors['LEFT_AVG']>0.25 or sensors['LEFT']>0.16:
+        return True
+    return False
+
+def is_right_available():
+    global sensors
+    if sensors['RIGHT']>0.16 and sensors['RIGHT_MAX']>0.16:
+        return True
+    return False
+
+def is_straight_available():
+    global sensors
+    if sensors['FRONT']>0.165:
+       return True
+    return False
+    # return not (is_left_available() or is_right_available() or is_uturn_available())
+
+def is_uturn_available():
+    global sensors
+    if sensors['FRONT']<0.05 and sensors['FLEFT']<0.08 and sensors['FRIGHT']<0.08:
+        return True
+    return False
+
+def go_straight(linear_velocity):
+    pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+    msg = Twist()
+    # correct_yaw()
+    msg.linear.x = linear_velocity
+    pub.publish(msg)
+
+def turn_right():
+    rotate(-90,0.225,0.5)
+    correct_yaw()
+
+def turn_left():
+    rotate(90,0.225,0.5)
+    correct_yaw()
+
+def uturn():
+    go_straight(0.0)
+    rotate(90,0,0.5)
+    rotate(90,0,0.5)
+    correct_yaw()
     
+
+
 def motion_go_straight(linear_velocity):
     pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
     msg = Twist()
     msg.linear.x = linear_velocity
     pub.publish(msg)
+
+
 
 
 def clbk_laser(msg):
@@ -101,363 +157,9 @@ def clbk_laser(msg):
         'FLEFT': min(min(msg.ranges[216:288]),10),
         'FLEFT_MAX': min(max(msg.ranges[216:288]),10),
         'LEFT': min(min(msg.ranges[288:359]),10),
+        'LEFT_AVG':Average(msg.ranges[288:359]),
         'LEFT_MAX':min(max(msg.ranges[288:359]),10),
     }
-
-
-def main():
-    global sensors
-    sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom)
-    sub = rospy.Subscriber('/my_mm_robot/laser/scan', LaserScan, clbk_laser)
-    rospy.init_node('directions')
-    msg=Twist()
-    rate = rospy.Rate(20)
-    # while not rospy.is_shutdown():
-    #     print("right: {:,.3f},fright: {:,.3f}, front: {:,.3f},fleft_max: {:,.3f},fleft: {:,.3f},left_max: {:,.3f},left_min: {:,.3f}".format(sensors['RIGHT'],sensors['FRIGHT'],sensors['FRONT'],sensors['FLEFT_MAX'],sensors['FLEFT'],sensors['LEFT_MAX'],sensors['LEFT']))
-    while not rospy.is_shutdown():
-        # IF left is available it will take left
-        if sensors['LEFT']>0.16 and sensors['LEFT_MAX']>0.16:
-            print("left: {}, left_max: {}".format(sensors['LEFT'],sensors['LEFT_MAX']))
-            rotate(90,0.225,0.5)
-            correct_yaw()
-        
-        # IF right is available it will take right
-        elif sensors['RIGHT']>0.16 and sensors['RIGHT_MAX']>0.16:
-            print("Right: {}, Right_max: {}".format(sensors['RIGHT'],sensors['RIGHT_MAX']))
-            rotate(-90,0.225,0.5)
-            correct_yaw()
-
-        # IF It is a dead end it will take a UTURN
-        elif sensors['FRONT']<0.05 and sensors['FLEFT']<0.08 and sensors['FRIGHT']<0.08:
-            print("FRONT: {}, FLEFT: {}, FRIGHT: {}".format(sensors['FRONT'],sensors['FLEFT'],sensors['FRIGHT']))
-            motion_go_straight(0)
-            rotate(90,0,0.5)
-            rotate(90,0,0.5)
-            correct_yaw()
-
-        # FOR GOING STRAIGHT    
-        else :
-            print("FRONT: {}, FLEFT: {}, FRIGHT: {}".format(sensors['FRONT'],sensors['FLEFT'],sensors['FRIGHT']))
-            motion_go_straight(0.2)
-            correct_yaw()
-        
-
-if __name__=='__main__':
-    main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
