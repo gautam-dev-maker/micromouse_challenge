@@ -31,7 +31,6 @@ sensors={
     'LEFT':     0,
     'LEFT_AVG': 0,
     'LEFT_MAX': 0,
-
 }
 
 def clbk_odom(msg):
@@ -124,7 +123,7 @@ def is_straight_available():
 
 def is_uturn_available():
     global sensors
-    if sensors['FRONT']<0.05 and sensors['FLEFT']<0.08 and sensors['FRIGHT']<0.08:
+    if sensors['FRONT']<0.08 and sensors['FLEFT']<0.08 and sensors['FRIGHT']<0.08:
         return True
     return False
 
