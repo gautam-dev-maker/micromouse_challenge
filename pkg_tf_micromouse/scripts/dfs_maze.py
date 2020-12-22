@@ -3,6 +3,7 @@
 from main import *
 list_stack=[]
 steps_list=[]
+coordinate_list=[]
 vel=0.3
 def backtrack():
     global list_stack,steps_list,vel
@@ -47,17 +48,27 @@ def backtrack():
 
 def dfs():
     while(True):
-        global vel
+        global vel,current_x_,current_y_
+        current_coordinates=[]
+        current_coordinates.append(current_x_)
+	current_coordinates.append(current_y_)
         if ((not is_left_available()) and (not is_right_available()) and is_straight_available()):
             correct_yaw()
             check_wall()
-            go_straight(vel)
+            print("{} {}".format(current_x_,current_y_))
+	    go_straight(vel)
             print("condition 1")
         elif (is_left_available() or is_right_available()):
             print("condition 2")
             correct_yaw()
             if not (is_left_available() or is_right_available()):
                 continue
+            if current_coordinates in coordinate_list:
+                uturn()
+                backtrack()
+                print('LOOP FOUND')
+                continue
+            coordinate_list.append(current_coordinates)
             current_list=[]
             if is_straight_available():
                 current_list.append('s')
