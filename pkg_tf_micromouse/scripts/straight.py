@@ -15,10 +15,11 @@ def main():
     # pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
     # sub = rospy.Subscriber('/dd_urdf/laser_scan', LaserScan, clbk_laser)
    
-        # motion_avoid_left()
+    # avoid_left()
     # check_left_wall()
     # check_right_wall()
-        
+    # check_left_wall()
+    check_wall()
         
     rospy.spin()
 

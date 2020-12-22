@@ -3,7 +3,7 @@
 from main import *
 list_stack=[]
 steps_list=[]
-vel=0.3
+vel=0.2
 def backtrack():
     global list_stack,steps_list,vel
     current_list=list_stack.pop()
@@ -74,8 +74,10 @@ def dfs():
             list_stack.append(current_list)
             if next_step=='l':
                 turn_left()
+                check_wall()
             if next_step=='r':
                 turn_right()
+                check_wall()
         # elif not ((is_straight_available()) or (is_left_available()) or (is_right_available())):
         elif is_uturn_available():
             print('condition 3')
