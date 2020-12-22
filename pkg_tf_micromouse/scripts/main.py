@@ -15,6 +15,8 @@ pub=None
 yaw_ = 0
 pub = 0
 current_yaw_=0
+current_x_=0
+current_y_=0
 
 sensors={
     'RIGHTMOST':0,
@@ -34,7 +36,7 @@ sensors={
 }
 
 def clbk_odom(msg):
-    global yaw_,current_yaw_
+    global yaw_,current_yaw_,current_x_,current_y_
     # yaw
     # convert quaternions to euler angles, only extracting yaw angle for the robot
     quaternion = (
@@ -44,6 +46,9 @@ def clbk_odom(msg):
         msg.pose.pose.orientation.w)
     euler = transformations.euler_from_quaternion(quaternion)
     
+    current_x_=round(msg.pose.pose.position.x,2)
+    current_y_=round(msg.pose.pose.position.y,2)
+
     current_yaw_ = euler[2]
 
 
@@ -116,7 +121,7 @@ def is_right_available():
 
 def is_straight_available():
     global sensors
-    if sensors['FRONT']>0.17:
+    if sensors['FRONT']>0.165:
        return True
     return False
     # return not (is_left_available() or is_right_available() or is_uturn_available())
