@@ -31,7 +31,8 @@ def clbk_laser(msg):
     }
     # print("Right: {},Front: {}, Left: {}, FLEFT: {}".format(sensors['RIGHT'],sensors['FRONT'],sensors['LEFT'],sensors['FLEFT']))
     # print("FLEFT: {0:.3f}, FLEFT_MAX: {0:.3f}, left: {0:.3f}, left_max: {0:.3f}".format(sensors['FLEFT'],sensors['FLEFT_MAX'],sensors['LEFT'],sensors['LEFT_MAX']))
-    print("FRONT: {0:.3f}".format(sensors['FRONT']))
+    # print("FRONT: {0:.3f}".format(sensors['FRONT']))
+    print("LEFT: {}, RIGHT: {}".format(sensors['LEFT'],sensors['RIGHT']))
 
 def main():
     rospy.init_node("reading_sensors")

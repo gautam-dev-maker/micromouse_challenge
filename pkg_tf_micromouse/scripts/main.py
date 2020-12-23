@@ -13,7 +13,6 @@ def Average(lst):
 #global variables 
 pub=None
 yaw_ = 0
-pub = 0
 current_yaw_=0
 current_x_=0
 current_y_=0
@@ -33,6 +32,7 @@ sensors={
     'LEFT':     0,
     'LEFT_AVG': 0,
     'LEFT_MAX': 0,
+
 }
 
 def clbk_odom(msg):
@@ -72,7 +72,7 @@ def rotate(degree,linear_velocity,angular_velocity):
     print("target_yaw: {} current_yaw:{}".format(target_yaw,current_yaw_))
     rospy.loginfo("turning by angle")
     yaw_error(target_yaw)
-    while yaw_error(target_yaw)>0.06 or yaw_error(target_yaw)<-0.06:
+    while yaw_error(target_yaw)>0.04 or yaw_error(target_yaw)<-0.04:
         msg.angular.z= angular_z
         msg.linear.x=linear_velocity
         pub.publish(msg)
@@ -109,13 +109,13 @@ def correct_yaw():
 
 def is_left_available():
     global sensors
-    if sensors['LEFT_AVG']>0.28 or sensors['LEFT']>0.12:
+    if sensors['LEFT_AVG']>0.28 or sensors['LEFT']>0.14:
         return True
     return False
 
 def is_right_available():
     global sensors
-    if sensors['RIGHT_AVG']>0.28 or sensors['RIGHT']>0.12:
+    if sensors['RIGHT_AVG']>0.28 or sensors['RIGHT']>0.14:
         return True
     return False
 
@@ -133,27 +133,37 @@ def is_uturn_available():
     return False
 
 def go_straight(linear_velocity):
+    global pub
     pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
     print("going straight with velocity {}".format(linear_velocity))
     msg = Twist()
-    correct_yaw()
+    # correct_yaw()
+    check_wall()
     msg.linear.x = linear_velocity
     pub.publish(msg)
 
 def turn_right():
     rotate(-90,0.225,0.5)
-    correct_yaw()
+    # correct_yaw()
+    check_wall()
+    
 
 def turn_left():
+    
     rotate(90,0.225,0.5)
-    correct_yaw()
+    check_wall()
+    # correct_yaw()
+
+    
 
 def uturn():
+    check_wall()
     go_straight(0.0)
     rotate(90,0,0.5)
-    # go_straight(0)
     rotate(90,0,0.5)
-    # correct_yaw()
+    correct_yaw()
+
+    
     
 
 
@@ -183,29 +193,34 @@ def clbk_laser(msg):
         'LEFT_MAX':min(max(msg.ranges[288:359]),10),
     }
 
+
 def avoid_left_wall():
-    global sensors
+    global sensors,pub
     # sub = rospy.Subscriber('/my_mm_robot/laser/scan', LaserScan, clbk_laser)
     # sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom)
     correct_yaw()
+    msg=Twist()
     print("correcting the wall distance, rotating by 90")
     rotate(90,0,1)
     correct_yaw()
     print("now going straight")
-    while sensors['FRONT']<0.07:
+    while sensors['FRONT']<0.06:
         print("front: {}".format(sensors['FRONT']))
-        go_straight(-0.05)
+        msg.linear.x=-0.05
+        pub.publish(msg)
         # if sensors['FRONT'>0.07:
         #     go_straight(0)
         #     break
-    go_straight(0)
+    msg.linear.x=0
+    pub.publish(msg)
     rotate(-90,0,1)
     correct_yaw()
 
 def avoid_right_wall():
-    global sensors
+    global sensors,pub
     # sub = rospy.Subscriber('/my_mm_robot/laser/scan', LaserScan, clbk_laser)
     # sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom)
+    msg=Twist()
     correct_yaw()
     print("correcting the wall distance, rotating by 90")
     rotate(-90,0,1)
@@ -213,20 +228,22 @@ def avoid_right_wall():
     print("now going straight")
     while sensors['FRONT']<0.07:
         print("front: {}".format(sensors['FRONT']))
-        go_straight(-0.05)
+        msg.linear.x=-0.05
+        pub.publish(msg)
         # if sensors['FRONT'>0.07:
         #     go_straight(0)
         #     break
-    go_straight(0)
+    msg.linear.x=0
+    pub.publish(msg)
     rotate(90,0,1)
     correct_yaw()
 
 def check_left_wall():
     global sensors 
-    sub = rospy.Subscriber('/my_mm_robot/laser/scan', LaserScan, clbk_laser)
-    sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom)
+    # sub = rospy.Subscriber('/my_mm_robot/laser/scan', LaserScan, clbk_laser)
+    # sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom)
     correct_yaw()
-    if sensors['LEFT']<0.035:
+    if sensors['LEFT']<0.05:
         avoid_left_wall()
 
 def check_right_wall():
@@ -234,10 +251,17 @@ def check_right_wall():
     # sub = rospy.Subscriber('/my_mm_robot/laser/scan', LaserScan, clbk_laser)
     # sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom)
     correct_yaw()
-    if sensors['RIGHT']<0.035:
+    if sensors['RIGHT']<0.05:
         avoid_right_wall()
 
 def check_wall():
+    global pub
+    # sub = rospy.Subscriber('/my_mm_robot/laser/scan', LaserScan, clbk_laser)
+    # sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom)
+    pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+    msg=Twist()
+    msg.linear.x=0
+    pub.publish(msg)
     check_left_wall()
     check_right_wall()
 

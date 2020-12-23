@@ -3,12 +3,8 @@
 from main import *
 list_stack=[]
 steps_list=[]
-<<<<<<< HEAD
-vel=0.2
-=======
 coordinate_list=[]
-vel=0.3
->>>>>>> 6bf475c341328fb97baaca36dcd13c05b7d4fe5c
+vel=0.225
 def backtrack():
     global list_stack,steps_list,vel
     current_list=list_stack.pop()
@@ -58,7 +54,7 @@ def dfs():
 	current_coordinates.append(current_y_)
         if ((not is_left_available()) and (not is_right_available()) and is_straight_available()):
             correct_yaw()
-            check_wall()
+            # check_wall()
             print("{} {}".format(current_x_,current_y_))
 	    go_straight(vel)
             print("condition 1")
@@ -67,12 +63,12 @@ def dfs():
             correct_yaw()
             if not (is_left_available() or is_right_available()):
                 continue
-            if current_coordinates in coordinate_list:
-                uturn()
-                backtrack()
-                print('LOOP FOUND')
-                continue
-            coordinate_list.append(current_coordinates)
+            # # if current_coordinates in coordinate_list:
+            # #     uturn()
+            # #     backtrack()
+            # #     print('LOOP FOUND')
+            # #     continue
+            # coordinate_list.append(current_coordinates)
             current_list=[]
             if is_straight_available():
                 current_list.append('s')
@@ -89,10 +85,8 @@ def dfs():
             list_stack.append(current_list)
             if next_step=='l':
                 turn_left()
-                check_wall()
             if next_step=='r':
                 turn_right()
-                check_wall()
         # elif not ((is_straight_available()) or (is_left_available()) or (is_right_available())):
         elif is_uturn_available():
             print('condition 3')
@@ -112,5 +106,3 @@ def main():
 
 if __name__=='__main__':
     main()
-
-
