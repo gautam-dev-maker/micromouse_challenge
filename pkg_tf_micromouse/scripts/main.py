@@ -3,7 +3,7 @@
 import rospy
 from nav_msgs.msg import Odometry
 from tf import transformations
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, Point
 from sensor_msgs.msg import LaserScan
 import math
 
@@ -15,8 +15,9 @@ pub=None
 yaw_ = 0
 pub = 0
 current_yaw_=0
-current_x_=0
-current_y_=0
+#position_=Point()
+position_x=0
+position_y=0
 
 sensors={
     'RIGHTMOST':0,
@@ -37,7 +38,7 @@ sensors={
 }
 
 def clbk_odom(msg):
-    global yaw_,current_yaw_,current_x_,current_y_
+    global yaw_,current_yaw_,position_x,position_y
     # yaw
     # convert quaternions to euler angles, only extracting yaw angle for the robot
     quaternion = (
@@ -46,12 +47,15 @@ def clbk_odom(msg):
         msg.pose.pose.orientation.z,
         msg.pose.pose.orientation.w)
     euler = transformations.euler_from_quaternion(quaternion)
-    
-    current_x_=round(msg.pose.pose.position.x,2)
-    current_y_=round(msg.pose.pose.position.y,2)
+    #print("{0:.2f} {1:.2f}".format(position_x,position_y))
+    position_x=msg.pose.pose.position.x
+    position_y=msg.pose.pose.position.y
 
     current_yaw_ = euler[2]
 
+def positn():
+    global position_x,position_y
+    return position_x,position_y
 
 def yaw_error(target_yaw):
     global current_yaw_ ,yaw_
@@ -89,40 +93,40 @@ def correct_yaw():
     yaw_degree=math.degrees(current_yaw_)
     if 0<yaw_degree<=30 or -30<=yaw_degree<0 and yaw_degree!=0:
         error=-yaw_degree
-        if abs(error)>5:
+        if abs(error)>3:
             rotate(-yaw_degree,0,0.1)
     elif 60<=yaw_degree<=120 and yaw_degree!=90:
         error=90-yaw_degree
-        if abs(error)>5:
+        if abs(error)>3:
             rotate(90-yaw_degree,0,0.1)
     elif 150<=yaw_degree<=180 and yaw_degree!=180:
         error=180-yaw_degree
-        if abs(error)>5:
+        if abs(error)>3:
             rotate(180-yaw_degree,0,0.1)
     elif -180<=yaw_degree<-150 and yaw_degree!=-180:
         error=-yaw_degree-180
-        if abs(error)>5:
+        if abs(error)>3:
             rotate(-yaw_degree-180,0,0.1)
     elif -120 <= yaw_degree<=-60 and yaw_degree!=-90 :
         error=-90-yaw_degree
-        if abs(error)>5:
+        if abs(error)>3:
             rotate(-90-yaw_degree,0,0.1)
 
 def is_left_available():
     global sensors
-    if sensors['LEFT_AVG']>0.28 or sensors['LEFT']>0.12:
+    if sensors['LEFT_AVG']>0.28 or sensors['LEFT']>0.14:
         return True
     return False
 
 def is_right_available():
     global sensors
-    if sensors['RIGHT_AVG']>0.28 or sensors['RIGHT']>0.12:
+    if sensors['RIGHT_AVG']>0.28 or sensors['RIGHT']>0.14:
         return True
     return False
 
 def is_straight_available():
     global sensors
-    if sensors['FRONT']>0.165:
+    if sensors['FRONT']>0.17:
        return True
     return False
     # return not (is_left_available() or is_right_available() or is_uturn_available())

@@ -6,7 +6,7 @@ steps_list=[]
 coordinate_list=[]
 vel=0.3
 def backtrack():
-    global list_stack,steps_list,vel
+    global list_stack,steps_list
     current_list=list_stack.pop()
     last_step=steps_list.pop()
     if last_step=='l':
@@ -47,15 +47,18 @@ def backtrack():
         backtrack()
 
 def dfs():
+    global coordinate_list,vel
+    #sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom)
     while(True):
-        global vel,current_x_,current_y_
+        #sub_odom = rospy.Subscriber('/odom', Odometry, clbk_odom)
         current_coordinates=[]
-        current_coordinates.append(current_x_)
-	current_coordinates.append(current_y_)
+        x,y=positn()
+        current_coordinates.append(x)
+        current_coordinates.append(y)
         if ((not is_left_available()) and (not is_right_available()) and is_straight_available()):
             correct_yaw()
             check_wall()
-            print("{} {}".format(current_x_,current_y_))
+            print("{0:.2f} {1:.2f}".format(x,y))
 	    go_straight(vel)
             print("condition 1")
         elif (is_left_available() or is_right_available()):
@@ -85,8 +88,10 @@ def dfs():
             list_stack.append(current_list)
             if next_step=='l':
                 turn_left()
+		correct_yaw()
             if next_step=='r':
                 turn_right()
+		correct_yaw()
         # elif not ((is_straight_available()) or (is_left_available()) or (is_right_available())):
         elif is_uturn_available():
             print('condition 3')
